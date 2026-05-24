@@ -73,7 +73,7 @@ is constructed (\cite[Definition~6.8]{Sprung2012}) from the auxiliary matrix
 \begin{equation}\label{eq:H-def}
 \Hcal(X) := \lim_{n \to \infty} C_1(X) \cdot C_2(X) \cdots C_n(X) \cdot A^{-(n+2)}
 \end{equation}
-where $C_k(X) = \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}$, $A = \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}$ is the Frobenius action matrix at $X=0$, and $\alpha, \bar\alpha$ are the roots of $X^2 - a_p X + p$. (Our normalisation of $\Hcal(X)$ differs from~\cite[Definition~4.5]{Sprung2012} by absorption of the matrix $B = \begin{pmatrix} -1 & -1 \\ \beta & \alpha \end{pmatrix}$ into the right factor of~\eqref{eq:halflog-matrix}; the resulting half-logarithms coincide.)
+where $C_k(X) = \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}$, $A = \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}$ is the Frobenius action matrix at $X=0$, and $\alpha, \bar\alpha$ are the roots of $X^2 - a_p X + p$. Equations~\eqref{eq:halflog-matrix} and~\eqref{eq:H-def} follow Sprung's Definitions~6.8 and~4.5 directly; no modification of his framework is required.
 
 The case $p = 2$ is delicate: Sprung's main theorem in~\cite{Sprung2016} is stated for \emph{odd} supersingular primes, leaving the $p = 2$ case open in the published literature, although Lei~\cite{Lei2013} remarks that his two-variable factorisation theorem extends to $p = 2$ with minor notational adjustments. Numerical investigation of the construction at $p = 2$ requires interfacing with computer algebra. The SageMath system~\cite{Sage} provides the routine \texttt{padic\_lseries.Dp\_valued\_series}, which returns a power series in $T$ with values in the Dieudonn\'e module $D_p(E) = H^1_{\rm dR}(E/\Qp)$, but the precise interpretation of its output requires reading the source.
 
@@ -179,7 +179,7 @@ The statement and proof are valid for every prime $p$, not only $p = 2$. The key
 \end{remark}
 
 \begin{remark}[Relation to Sprung's general convergence theorem]\label{rem:lei-relation}
-The convergence of the projective limit~\eqref{eq:H-def} for general $X$ is the content of \cite[Theorem~4.6]{Sprung2012}, and is reformulated by Lei~\cite[Theorem~1.5]{Lei2013} in the language of $p$-adic logarithmic matrices. Theorem~\ref{thm:trivial-limit} above is the specialisation $X = 0$, where the limit becomes algebraically trivial. The determinant of $\Hcal(X)$ is computed in~\cite[Remark~2.19]{Sprung2012}; for our application at $X = 0$ it reduces to $\det(A^{-2}) = 1/p^2$, in agreement with Lemma~\ref{lem:det-eps} via the bridge $\eps = (1-\varphi)^2$.
+The convergence of the projective limit~\eqref{eq:H-def} for general $X$ is the content of Sprung's \cite[Lemma~4.4 (Convergence Lemma) and Lemma~4.8 (Growth Lemma)]{Sprung2012}, and is reformulated by Lei~\cite[Theorem~1.5]{Lei2013} in the language of $p$-adic logarithmic matrices. Theorem~\ref{thm:trivial-limit} above is the specialisation $X = 0$, where the limit becomes algebraically trivial. The determinant of $\Hcal(X)$ is computed in~\cite[Example~4.7]{Sprung2012}; for our application at $X = 0$ it reduces to $\det(A^{-2}) = 1/p^2$, in agreement with Lemma~\ref{lem:det-eps} via the bridge $\eps = (1-\varphi)^2$.
 \end{remark}
 
 \begin{proposition}[Explicit $\Hcal(0)$ at $p=2$]\label{prop:H-explicit-p2}
@@ -372,7 +372,7 @@ $a_p = 0$ supersingular (high) & 30 & $[1\,001,\,63\,096]$ & 30/30 \\
 \hline
 \textbf{Total} & \textbf{180} & $[37,\,63\,096]$ & \textbf{180/180} \\
 \end{tabular}
-\caption{Numerical verification of Theorem~\ref{thm:bridge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the relation $\text{sp} = ((G + a_p H,\,-pH)) \cdot ((1-\varphi)^2)^T / (1-\varphi)^2 = L_p / (1-\varphi)^{-2}$ holds bit-exactly. Verified on 180 curves spanning four orders of magnitude in conductor; zero discrepancies.}
+\caption{Numerical verification of Theorem~\ref{thm:bridge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, in bit-exact agreement with SageMath's \texttt{Dp\_valued\_series} output. Verified on 180 curves spanning four orders of magnitude in conductor; zero discrepancies.}
 \label{tab:bilanz}
 \end{table}
 
@@ -443,4 +443,9 @@ J.~E.~Cremona,
 \end{thebibliography}
 
 \end{document}
-dge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the corresponding identity in the cyclic basis holds bit-exactly. Verified o
+dge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the corresponding identity in the cyclic basis holds bit-exactly. Verified on 180 curves spanning four orders of magnitude in conductor; zero discrepancies.}
+\label{tab:bilanz}
+\end{table}
+
+\begin{remark}[The case $a_p = +2$]
+The case $a_p = +2$ a
