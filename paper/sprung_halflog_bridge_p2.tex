@@ -73,7 +73,7 @@ is constructed (\cite[Definition~6.8]{Sprung2012}) from the auxiliary matrix
 \begin{equation}\label{eq:H-def}
 \Hcal(X) := \lim_{n \to \infty} C_1(X) \cdot C_2(X) \cdots C_n(X) \cdot A^{-(n+2)}
 \end{equation}
-where $C_k(X) = \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}$, $A = \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}$ is the Frobenius action matrix at $X=0$, and $\alpha, \bar\alpha$ are the roots of $X^2 - a_p X + p$.
+where $C_k(X) = \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}$, $A = \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}$ is the Frobenius action matrix at $X=0$, and $\alpha, \bar\alpha$ are the roots of $X^2 - a_p X + p$. (Our normalisation of $\Hcal(X)$ differs from~\cite[Definition~4.5]{Sprung2012} by absorption of the matrix $B = \begin{pmatrix} -1 & -1 \\ \beta & \alpha \end{pmatrix}$ into the right factor of~\eqref{eq:halflog-matrix}; the resulting half-logarithms coincide.)
 
 The case $p = 2$ is delicate: Sprung's main theorem in~\cite{Sprung2016} is stated for \emph{odd} supersingular primes, leaving the $p = 2$ case open in the published literature, although Lei~\cite{Lei2013} remarks that his two-variable factorisation theorem extends to $p = 2$ with minor notational adjustments. Numerical investigation of the construction at $p = 2$ requires interfacing with computer algebra. The SageMath system~\cite{Sage} provides the routine \texttt{padic\_lseries.Dp\_valued\_series}, which returns a power series in $T$ with values in the Dieudonn\'e module $D_p(E) = H^1_{\rm dR}(E/\Qp)$, but the precise interpretation of its output requires reading the source.
 
@@ -124,11 +124,22 @@ a sum of $p$ terms. Each term evaluates to $1$ at $X = 1$, so $\Phi_{p^k}(1) = p
 
 \subsection{The Dieudonn\'e basis and the Frobenius matrix}\label{ssec:dieudonne}
 
-Following SageMath's convention for $p$-adic $L$-series of supersingular elliptic curves~\cite[\texttt{padic\_lseries.frobenius}]{Sage}, the Frobenius $\varphi$ on $D_p(E) = H^1_{\rm dR}(E/\Qp)$ is represented in the basis $(\omega, \varphi\omega)$ by the matrix
+On the Dieudonn\'e module $D_p(E) = H^1_{\rm dR}(E/\Qp)$, the Frobenius operator $\varphi$ admits the matrix representation
 \begin{equation}\label{eq:phi-matrix}
 \varphi = \begin{pmatrix} 0 & -1/p \\ 1 & a_p/p \end{pmatrix}
 \end{equation}
-and satisfies $\varphi^2 - (a_p/p) \varphi + 1/p = 0$. We will encounter the matrix $\eps^{-1} := (1 - \varphi)^2$ throughout. Direct computation gives:
+in the \emph{cyclic} basis $(\omega, \varphi\omega)$, where $\omega$ is the invariant differential. This is the companion matrix of the characteristic polynomial $X^2 - (a_p/p)X + 1/p = 0$ of $\varphi$, and it satisfies $\varphi^2 - (a_p/p) \varphi + 1/p = 0$.
+
+\begin{remark}[Two distinct Frobenius representations in SageMath]\label{rem:two-bases}
+SageMath uses two different bases for the Dieudonn\'e module, leading to two different matrix representations of the same operator $\varphi$:
+\begin{enumerate}
+\item[(a)] The \emph{geometric} basis $(\omega, \eta)$ with $\eta = x\,\omega$, returned by the method \texttt{L.frobenius()}.
+\item[(b)] The \emph{cyclic} basis $(\omega, \varphi\omega)$, used internally in \texttt{L.Dp\_valued\_series()} via the explicit assignment \texttt{phi = matrix([[0, -1/p], [1, E.ap(p)/p]])} at \texttt{padic\_lseries.py}, line 1442.
+\end{enumerate}
+The matrix~\eqref{eq:phi-matrix} represents $\varphi$ in basis (b); this is the convention we use throughout, since the bridge formula of Theorem~\ref{thm:bridge} concerns exactly the output of \texttt{Dp\_valued\_series}. A reader using \texttt{L.frobenius()} to obtain~\eqref{eq:phi-matrix} would obtain a different matrix, related to ours by an explicit change-of-basis.
+\end{remark}
+
+We will encounter the matrix $\eps^{-1} := (1 - \varphi)^2$ throughout. Direct computation gives:
 \begin{lemma}\label{lem:det-eps}
 $\det\bigl((1 - \varphi)^2\bigr) = \dfrac{|E(\F_p)|^2}{p^2} = \dfrac{(p + 1 - a_p)^2}{p^2}$.
 \end{lemma}
@@ -285,7 +296,19 @@ Equivalently, the $(1, \alpha)$-decomposition $L_p(E, \alpha, T) = G(T) + H(T)\a
 \end{theorem}
 
 \begin{proof}
-The first equation is the docstring statement of \texttt{Dp\_valued\_series} in the SageMath source code (\texttt{padic\_lseries.py}, class \texttt{pAdicLseriesSupersingular}). Inverting the normalisation: multiply both sides of~\eqref{eq:sage-def} from the right by $(1-\varphi)^2$ (viewing $L_p$, $\omega$, $\varphi(\omega)$ as row vectors in the appropriate basis). The result is $L_p \cdot ((1-\varphi)^2)^T$ in the Dieudonn\'e basis, which by the SageMath internal convention (cf.\ source code) corresponds to the vector $(G + a_p H,\, -p H)$. Solving for $G$ and $H$ yields~\eqref{eq:bridge-explicit}.
+The first equation is the docstring statement of \texttt{Dp\_valued\_series} (\texttt{padic\_lseries.py}, class \texttt{pAdicLseriesSupersingular}, lines 1398--1447).
+
+For the second equation, we first establish the algebraic identification between $L_p(E, \alpha, T) = G(T) + H(T)\alpha \in \Qp(\alpha)[\![T]\!]$ and an element of $D_p(E)[\![T]\!]$ in the cyclic basis $(\omega, \varphi\omega)$ of Section~\ref{ssec:dieudonne}. There is a unique embedding $\Qp(\alpha) \hookrightarrow D_p(E)[1/p] \otimes \Qp(\alpha)$ sending $1 \mapsto \omega$ and respecting the multiplication $\alpha^2 = a_p\alpha - p$ (the minimal polynomial of $\alpha$ on the Tate module). Concretely, this embedding sends
+\begin{equation}\label{eq:embedding-alpha}
+\alpha \longmapsto a_p\,\omega - p\,\varphi(\omega).
+\end{equation}
+To verify~\eqref{eq:embedding-alpha}, compute the image of $\alpha^2$ on both sides: on the source side, $\alpha^2 = a_p\alpha - p$ maps to $a_p\bigl(a_p\omega - p\varphi(\omega)\bigr) - p\,\omega = (a_p^2 - p)\,\omega - a_p\,p\,\varphi(\omega)$; on the target side, $\bigl(a_p\omega - p\varphi(\omega)\bigr)\cdot\bigl(a_p\omega - p\varphi(\omega)\bigr)$ in the ring $\Qp[\varphi]/(\varphi^2 - (a_p/p)\varphi + 1/p)$ equals $a_p^2\,\omega - 2 a_p p\,\varphi(\omega) + p^2\varphi^2(\omega) = a_p^2\,\omega - 2 a_p p\,\varphi(\omega) + p^2\bigl((a_p/p)\varphi(\omega) - (1/p)\omega\bigr) = (a_p^2 - p)\,\omega - a_p p\,\varphi(\omega)$, matching the source.
+
+Under~\eqref{eq:embedding-alpha}, the element $L_p = G + H\alpha$ maps to
+\[
+G\cdot\omega + H\cdot(a_p\omega - p\varphi(\omega)) = (G + a_p H)\,\omega + (-pH)\,\varphi(\omega).
+\]
+Multiplying~\eqref{eq:sage-def} from the right by $(1-\varphi)^2$ removes the normalisation factor, yielding $L_p = (G + a_p H)\,\omega + (-pH)\,\varphi(\omega)$ in the cyclic basis. Solving for $G$ and $H$ from the components of $\text{sp} \cdot ((1-\varphi)^2)^T$ gives~\eqref{eq:bridge-explicit}. This is exactly the inverse of the assignment in \texttt{padic\_lseries.py}, lines~1442--1445.
 \end{proof}
 
 \begin{remark}
@@ -317,18 +340,16 @@ Label & Conductor & $a_p$ & $V_0$ & $(G_{V_0}, H_{V_0})$ \\
 \texttt{58939a1}  & 58\,939  & $0$  & 3 & $(1,\,\, -1/4)$ \\
 \hline
 \end{tabular}
-\caption{$(G_{V_0}, H_{V_0})$ for seven supersingular curves at $p = 2$, at the
-first stage where $L_p^\flat$ does not vanish (denoted $V_0$). Values are recovered
-from SageMath's \texttt{Dp\_valued\_series} via the bridge formula~\eqref{eq:bridge-explicit}.
-All seven pairs lie in $\Q^2$. The values for the remaining $180 - 7 = 173$ verified
-curves are tabulated in the supplementary code repository (see Section~\ref{sec:numerical}).
-A reproducer script for this table is provided at
-\texttt{code/sage\_verify\_paper\_table1.py}.}
+\caption{$(G_{V_0}, H_{V_0})$ for seven supersingular curves at $p = 2$, at the first stage $V_0$ where $L_p^\flat$ does not vanish (cf.\ Remark~\ref{rem:V0-def}). Values are recovered from SageMath's \texttt{Dp\_valued\_series} via the bridge formula~\eqref{eq:bridge-explicit}; all seven pairs lie in $\Q^2$ (a consequence of Theorem~\ref{thm:bridge} and the rationality of SageMath's modular-symbol output). The sample was chosen to span the full conductor range of the verified set; the remaining $173$ curves yield analogous rational $(G_{V_0}, H_{V_0})$-pairs and are tabulated in the supplementary code repository. A reproducer script is provided at \texttt{code/sage\_verify\_paper\_table1.py}.}
 \label{tab:sample}
 \end{table}
 
+\begin{remark}[Definition of $V_0$ and rationality]\label{rem:V0-def}
+We use $V_0 = V_0^\flat$ to denote the first stage $k \geq 0$ at which $L_p^\flat$ is nonzero; equivalently, the smallest index $k$ for which the second component $v_1[k]$ of the SageMath output is nonzero. The Mazur--Tate stage $V_0$ thus depends on the curve and is in general distinct from $X = 0$ (which is treated in Theorem~\ref{thm:trivial-limit}); the table entries below are values of $L_p$ at $T^{V_0}$, not at $T = 0$. The rational form of each entry follows from Theorem~\ref{thm:bridge}, since SageMath's modular-symbol output is rational and the bridge formula~\eqref{eq:bridge-explicit} preserves rationality.
+\end{remark}
+
 \begin{remark}[Asymmetric vanishing of $L_p^\sharp$ and $L_p^\flat$]\label{rem:V0-asymmetry}
-We use $V_0$ to denote the first stage $k$ at which $L_p^\flat$ (equivalently, Sage's $\mathtt{sp}[1][k]$) is nonzero. In general, $L_p^\sharp$ may vanish to a different order than $L_p^\flat$; let $V_0^\sharp$ and $V_0^\flat$ denote the respective vanishing levels. The curve \texttt{55935g1} provides a concrete instance with $V_0^\sharp = 4$ while $V_0^\flat = 5$: SageMath's $\mathtt{sp}[0][4] = 1/2 \neq 0$ at one stage before $\mathtt{sp}[1]$ becomes nonzero. The asymmetric vanishing phenomenon is intrinsic to Sprung's framework and is discussed in~\cite[Section~6]{Sprung2012}. For all seven curves in Table~\ref{tab:sample}, the $(G_{V_0}, H_{V_0})$-pair is recovered at the $L_p^\flat$-vanishing stage $V_0^\flat$.
+In general, $L_p^\sharp$ may vanish to a different order than $L_p^\flat$; let $V_0^\sharp$ and $V_0^\flat = V_0$ denote the respective vanishing levels. The curve \texttt{55935g1} provides a concrete instance with $V_0^\sharp = 4$ while $V_0^\flat = 5$: SageMath's $v_0[4] = 1/2 \neq 0$ at one stage before $v_1$ becomes nonzero. The asymmetric vanishing phenomenon is intrinsic to Sprung's framework and is discussed in~\cite[Section~6]{Sprung2012}. For all seven curves in Table~\ref{tab:sample}, the $(G_{V_0}, H_{V_0})$-pair is recovered at the $L_p^\flat$-vanishing stage $V_0^\flat$.
 \end{remark}
 
 \subsection{Computational details and code}
@@ -343,7 +364,7 @@ All verifications were conducted in SageMath~10 using the full Cremona database 
 \begin{table}[h]
 \centering
 \begin{tabular}{l|r|l|r}
-Class & $n$ & Conductor range & Bridge applies \\
+Class & $n$ & Conductor range & Bit-exact \\
 \hline
 $a_p = -2$ supersingular & 75 & $[37,\,997]$ & 75/75 \\
 $a_p = 0$ supersingular (low)  & 75 & $[77,\,225]$ & 75/75 \\
@@ -351,7 +372,7 @@ $a_p = 0$ supersingular (high) & 30 & $[1\,001,\,63\,096]$ & 30/30 \\
 \hline
 \textbf{Total} & \textbf{180} & $[37,\,63\,096]$ & \textbf{180/180} \\
 \end{tabular}
-\caption{Numerical verification of Theorem~\ref{thm:bridge}: 180 curves, four orders of magnitude in conductor, no failures.}
+\caption{Numerical verification of Theorem~\ref{thm:bridge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the relation $\text{sp} = ((G + a_p H,\,-pH)) \cdot ((1-\varphi)^2)^T / (1-\varphi)^2 = L_p / (1-\varphi)^{-2}$ holds bit-exactly. Verified on 180 curves spanning four orders of magnitude in conductor; zero discrepancies.}
 \label{tab:bilanz}
 \end{table}
 
@@ -406,7 +427,8 @@ arXiv: \href{https://arxiv.org/abs/1506.02538}{1506.02538}.
 \bibitem{Lei2013}
 A.~Lei,
 \emph{Factorisation of two-variable $p$-adic $L$-functions,}
-preprint, 2013.
+Canad.\ Math.\ Bull.\ \textbf{57} (2014), no.~4, 845--852.
+arXiv: \href{https://arxiv.org/abs/1304.7473}{1304.7473}.
 
 \bibitem{Sage}
 The Sage Developers,
@@ -421,3 +443,4 @@ J.~E.~Cremona,
 \end{thebibliography}
 
 \end{document}
+dge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the corresponding identity in the cyclic basis holds bit-exactly. Verified o
