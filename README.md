@@ -129,4 +129,4 @@ machine-readable citation metadata, or use:
 
 ## Contact
 
-Raphael Elkuch — `r.elkuch@elkuch.group`
+Raphael Elkuch — `relkuch@gmail.com`
