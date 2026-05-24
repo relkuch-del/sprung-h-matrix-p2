@@ -21,21 +21,23 @@ magnitude. All 180 curves confirm the bridge formula bit-exactly.
 ```
 sprung-h-matrix-p2/
 ├── code/                          # SageMath verification scripts
-│   ├── Hn_limes_konstruktor_v1.py        # H_n-limit constructor (Theorem 1.1)
-│   ├── Hn_limes_konstruktor_v2.py        # epsilon-bridge identification
+│   ├── Hn_limes_konstruktor_v1.py        # H_n-limit constructor (Theorem 3.1)
+│   ├── Hn_limes_konstruktor_v2.py        # epsilon-bridge identification (sympy)
 │   ├── sage_verify_17963c1_v2.py         # main anchor verification (17963c1)
 │   ├── sage_verify_30487a1.py            # a_p=0 anchor verification (30487a1)
 │   ├── sage_verify_bulk.py               # manual pool (14 triggers)
 │   ├── sage_verify_bulk_v2.py            # automatic Cremona search (150 triggers)
 │   ├── sage_verify_ap0_highcond.py       # a_p=0 high-conductor (30 triggers)
+│   ├── sage_verify_paper_table1.py       # reproducer for Table 1 of the paper
 │   └── pollack_cross_check_v1.py         # Pollack-Sprung Remark 6.16 cross-check
 ├── data/                          # Verification log files
 │   ├── sage_verify_17963c1_v2_log.txt
 │   ├── sage_verify_bulk_v2_log.txt        # full 150-trigger log
-│   └── sage_verify_ap0_highcond_log.txt   # 30 high-conductor log
+│   ├── sage_verify_ap0_highcond_log.txt   # 30 high-conductor log
+│   └── sage_verify_paper_table1_log.txt   # Table 1 reproduction log
 ├── paper/
-│   ├── paper_v1.tex                       # LaTeX source
-│   └── paper_v1.pdf                       # compiled paper
+│   ├── sprung_halflog_bridge_p2.tex       # LaTeX source (current version)
+│   └── sprung_halflog_bridge_p2.pdf       # compiled paper
 ├── LICENSE                        # MIT (for code)
 ├── LICENSE-DATA                   # CC-BY 4.0 (for data and paper)
 ├── CITATION.cff                   # citation metadata
@@ -52,9 +54,22 @@ sprung-h-matrix-p2/
   for installation instructions.
 * Python 3.10+ with `sympy` (for the algebraic constructor).
 
-### Running the algebraic constructor (sympy)
+### Reproducing Table 1 of the paper
 
-The algebraic part of Theorem 1.1 and Theorem 1.2 is verified without SageMath:
+The four-curve sample of Table 1 in `paper/sprung_halflog_bridge_p2.pdf` is
+reproduced bit-exactly by the dedicated script:
+
+```bash
+sage code/sage_verify_paper_table1.py
+```
+
+Expected output: four lines, each ending with ✓, and the final summary
+`ALLE 4 TRIGGER bit-genau verifiziert`. Computation time under one minute.
+
+### Running the algebraic part (sympy only)
+
+The algebraic content of Theorem 3.1 (triviality of the limit at $X=0$)
+and the bridge of Theorem 3.5 is verified without SageMath:
 
 ```bash
 python3 code/Hn_limes_konstruktor_v1.py
@@ -62,12 +77,13 @@ python3 code/Hn_limes_konstruktor_v2.py
 ```
 
 The first script verifies that $H_n(0) \cdot A^{-(n+2)} = A^{-2}$ for
-$n = 1, \ldots, 15$. The second identifies the $\varepsilon^{-1}$ bridge
-$u_\mathrm{Sprung} = \varepsilon^{-1} u_\mathrm{Sage}$ explicitly.
+$n = 1, \ldots, 15$. The second isolates the bridge between SageMath's
+Dieudonné basis and Sprung's canonical $(1, \alpha)$-basis explicitly.
 
-### Running the Sage bulk verification
+### Running the bulk SageMath verification
 
-The full 180-curve verification requires SageMath:
+The 180-curve consistency check of SageMath's `Dp_valued_series` requires
+SageMath:
 
 ```bash
 # Main anchor (17963c1, a_p = -2)
@@ -114,8 +130,8 @@ machine-readable citation metadata, or use:
 ```bibtex
 @article{Elkuch2026sprung,
   author = {Elkuch, Raphael},
-  title  = {Explicit evaluation of Sprung's half-logarithm {$H$}-matrix at
-            {$X=0$} for {$p=2$} supersingular reduction},
+  title  = {Explicit half-logarithm constants and the {SageMath--Sprung} bridge
+            for {$p=2$} supersingular reduction},
   year   = {2026},
   note   = {Preprint, arXiv:[to be added]},
 }

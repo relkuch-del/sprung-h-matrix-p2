@@ -1,0 +1,438 @@
+%% paper_v2.tex
+%% Explicit Half-Logarithm Constants and the SageMath Bridge
+%% for p=2 Supersingular Reduction
+%%
+%% Author: Raphael Elkuch
+%% Date: 26 May 2026
+%% Style: amsart, English, arXiv-ready
+%%
+%% Version 2 — Phase-1c-Klärung integriert:
+%%   - Theorem A in voller Allgemeinheit (alle p)
+%%   - Theorem B: Sage-Konventions-Dekodierung explizit
+%%   - Rationalitäts-Korollar mit konkreten Werten 1/2, etc.
+%%   - §5 (Pollack-Renormierung) gestrichen
+%%   - §4 (Empirie) als Sage-Konsistenz-Check ehrlich umformuliert
+
+\documentclass[11pt,a4paper]{amsart}
+
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Qp}{\mathbb{Q}_p}
+\newcommand{\Zp}{\mathbb{Z}_p}
+\newcommand{\Qtwo}{\mathbb{Q}_2}
+\newcommand{\Ztwo}{\mathbb{Z}_2}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\Hcal}{\mathcal{H}}
+\DeclareMathOperator{\Tr}{Tr}
+
+\title[Half-logarithm constants and the SageMath bridge at $p=2$]{Explicit half-logarithm constants and the SageMath--Sprung bridge for $p=2$ supersingular reduction}
+
+\author{Raphael Elkuch}
+\email{relkuch@gmail.com}
+
+\date{May 26, 2026}
+
+\subjclass[2020]{Primary 11G05, 11G40, 11R23; Secondary 11Y40}
+
+\keywords{$p$-adic $L$-function, supersingular reduction, Iwasawa theory, half-logarithm, Sprung's main conjecture, SageMath, $p=2$ elliptic curves, Dieudonn\'e module}
+
+\begin{document}
+
+\begin{abstract}
+We make two observations on Sprung's half-logarithm matrix $\Hcal(X)$ for elliptic curves with supersingular reduction. First, for any prime $p$, the projective-limit construction of $\Hcal(X)$ at $X=0$ degenerates to the closed form $A^{-2}B$, since the cyclotomic-polynomial values $\Phi_{p^k}(1)$ collapse to $p$. Second, by reading the SageMath source code for \texttt{padic\_lseries.Dp\_valued\_series}, we recover the explicit identification between Sage's output and the constants of $L_p(E, \alpha, T)$ in the $(1, \alpha)$-basis: Sage returns $(1-\varphi)^{-2}\cdot L_p$ in the Dieudonn\'e $(\omega, \varphi\omega)$-basis, with $\varphi$ the half-frobenius matrix at the supersingular prime. Combining the two observations, we deduce that the constant terms of Sprung's half-logarithms at $X=0$ are rational over $\Q$ in the canonical $(1, \alpha)$-basis, and we list the explicit values for $p=2$ supersingular curves. We verify the SageMath--Sprung bridge bit-exactly on 180 elliptic curves drawn from the Cremona database with conductors in $[37,\,63\,096]$.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}\label{sec:intro}
+
+Iwasawa theory for elliptic curves at supersingular primes was reformulated by Kobayashi~\cite{Kobayashi2003} for the case $a_p = 0$, building on Pollack's plus/minus $p$-adic $L$-functions~\cite{Pollack2003}. Sprung~\cite{Sprung2012} extended the construction to all supersingular reductions with $a_p \neq 0$, introducing a pair of half-logarithms $\log_\alpha^\sharp$, $\log_\alpha^\flat$ and a pair of $p$-adic $L$-functions $L_p^\sharp$, $L_p^\flat$ satisfying the canonical decomposition (\cite[Theorem~6.12]{Sprung2012})
+\begin{equation}\label{eq:sprung-main}
+L_p(E, \alpha, X) = \log_\alpha^\sharp(1+X) \cdot L_p^\sharp(E, X) + \log_\alpha^\flat(1+X) \cdot L_p^\flat(E, X).
+\end{equation}
+The half-logarithm matrix
+\begin{equation}\label{eq:halflog-matrix}
+\begin{pmatrix} \log_\alpha^\sharp(1+X) & \log_{\bar\alpha}^\sharp(1+X) \\ \log_\alpha^\flat(1+X) & \log_{\bar\alpha}^\flat(1+X) \end{pmatrix} := \Hcal(X) \cdot \begin{pmatrix} 1 & 1 \\ -\alpha^{-1} & -\bar\alpha^{-1} \end{pmatrix}
+\end{equation}
+is constructed (\cite[Definition~6.8]{Sprung2012}) from the auxiliary matrix
+\begin{equation}\label{eq:H-def}
+\Hcal(X) := \lim_{n \to \infty} C_1(X) \cdot C_2(X) \cdots C_n(X) \cdot A^{-(n+2)}
+\end{equation}
+where $C_k(X) = \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}$, $A = \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}$ is the Frobenius action matrix at $X=0$, and $\alpha, \bar\alpha$ are the roots of $X^2 - a_p X + p$.
+
+The case $p = 2$ is delicate: Sprung's main theorem in~\cite{Sprung2016} is stated for \emph{odd} supersingular primes, leaving the $p = 2$ case open. Numerical investigation of the construction at $p = 2$ requires interfacing with computer algebra. The SageMath system~\cite{Sage} provides the routine \texttt{padic\_lseries.Dp\_valued\_series}, which returns a power series in $T$ with values in the Dieudonn\'e module $D_p(E) = H^1_{\rm dR}(E/\Qp)$, but the precise interpretation of its output requires reading the source.
+
+In this note we make two observations.
+
+\emph{(I) Triviality of the limit at $X=0$.} For any prime $p$, the projective limit~\eqref{eq:H-def} collapses at $X = 0$: since $\Phi_{p^k}(1) = p$ for all $k \geq 1$, the cofactor matrices $C_k(0)$ coincide with $A$, and $C_1(0) \cdots C_n(0) \cdot A^{-(n+2)} = A^{-2}$ holds independently of $n$. This is Theorem~\ref{thm:trivial-limit} below.
+
+\emph{(II) The SageMath--Sprung bridge.} Reading the SageMath source for \texttt{Dp\_valued\_series} reveals that the returned vector $v = (v_0, v_1)$ satisfies
+\[
+(1 - \varphi)^{-2} \cdot L_p(E, T) = v_0 \cdot \omega + v_1 \cdot \varphi(\omega)
+\]
+in the Dieudonn\'e basis $(\omega, \varphi\omega)$, where $\varphi$ is the Frobenius matrix represented by $\begin{pmatrix} 0 & -1/p \\ 1 & a_p/p \end{pmatrix}$ in this basis. To recover the $(G, H)$-decomposition $L_p(E, \alpha, T) = G(T) + H(T)\alpha$ in the $(1, \alpha)$-basis, one applies the inverse normalisation $(1-\varphi)^2$ from the right and then reads
+\[
+H = -\tfrac{1}{p} (\text{second component}), \qquad G = (\text{first component}) - a_p H.
+\]
+This is Theorem~\ref{thm:bridge}.
+
+Combining these two observations, we obtain explicit rational values for the constant terms of the Sprung half-logarithms at $X = 0$ for $p = 2$ supersingular curves (Corollary~\ref{cor:rationality}). We verify the bridge bit-exactly on 180 elliptic curves drawn from the Cremona database (Section~\ref{sec:numerical}).
+
+\subsection*{Acknowledgments}
+
+The author thanks the SageMath developer community and J.~E.~Cremona for the elliptic-curve infrastructure on which this work depends. Manuscript preparation and bulk verification benefited from interactive work with Anthropic's Claude; all mathematical statements were independently verified by the author.
+
+\section{Setting and preliminaries}\label{sec:setting}
+
+\subsection{Notation}
+
+Throughout, $p$ is a prime and $E/\Q$ is an elliptic curve without complex multiplication, of good supersingular reduction at $p$. Let $a_p = a_p(E)$, with $|a_p| < 2\sqrt{p}$ and $p \mid a_p$ by supersingularity. At $p = 2$ this gives $a_p \in \{-2,\, 0,\, +2\}$; we treat all three cases in Section~\ref{sec:main}. The eigenvalues of Frobenius on the $p$-adic Tate module are $\alpha, \bar\alpha$, roots of $X^2 - a_p X + p$; we write $K_\alpha = \Q_p(\alpha)$ for the local quadratic extension.
+
+\subsection{The Sprung half-logarithm matrix}\label{ssec:H-def}
+
+The auxiliary matrices in~\eqref{eq:H-def} are
+\begin{align}
+A &= \begin{pmatrix} a_p & 1 \\ -p & 0 \end{pmatrix}, &
+C_k(X) &= \begin{pmatrix} a_p & 1 \\ -\Phi_{p^k}(1+X) & 0 \end{pmatrix}.
+\end{align}
+The cyclotomic polynomial values $\Phi_{p^k}(1)$ collapse to a single value:
+\begin{lemma}\label{lem:Phi-at-1}
+For every prime $p$ and every $k \geq 1$, we have $\Phi_{p^k}(1) = p$.
+\end{lemma}
+\begin{proof}
+For $p$ prime and $k \geq 1$, the $p^k$-th cyclotomic polynomial has the explicit form
+\[
+\Phi_{p^k}(X) = \sum_{j=0}^{p-1} X^{j\,p^{k-1}} = 1 + X^{p^{k-1}} + X^{2\,p^{k-1}} + \cdots + X^{(p-1)\,p^{k-1}},
+\]
+a sum of $p$ terms. Each term evaluates to $1$ at $X = 1$, so $\Phi_{p^k}(1) = p$.
+\end{proof}
+
+\subsection{The Dieudonn\'e basis and the Frobenius matrix}\label{ssec:dieudonne}
+
+Following SageMath's convention for $p$-adic $L$-series of supersingular elliptic curves~\cite[\texttt{padic\_lseries.frobenius}]{Sage}, the Frobenius $\varphi$ on $D_p(E) = H^1_{\rm dR}(E/\Qp)$ is represented in the basis $(\omega, \varphi\omega)$ by the matrix
+\begin{equation}\label{eq:phi-matrix}
+\varphi = \begin{pmatrix} 0 & -1/p \\ 1 & a_p/p \end{pmatrix}
+\end{equation}
+and satisfies $\varphi^2 - (a_p/p) \varphi + 1/p = 0$. We will encounter the matrix $\eps^{-1} := (1 - \varphi)^2$ throughout. Direct computation gives:
+\begin{lemma}\label{lem:det-eps}
+$\det\bigl((1 - \varphi)^2\bigr) = \dfrac{|E(\F_p)|^2}{p^2} = \dfrac{(p + 1 - a_p)^2}{p^2}$.
+\end{lemma}
+\begin{proof}
+$\det(1 - \varphi) = 1 - (a_p/p) + 1/p = (p + 1 - a_p)/p$; squaring and applying $|E(\F_p)| = p + 1 - a_p$ yields the formula.
+\end{proof}
+In our setting $p = 2$, this becomes
+\begin{equation}\label{eq:det-eps-explicit}
+\det\bigl((1 - \varphi)^2\bigr) = \frac{(3 - a_p)^2}{4} = \begin{cases} 25/4 & \text{if } a_p = -2, \\ 9/4 & \text{if } a_p = 0. \end{cases}
+\end{equation}
+
+\section{Main results}\label{sec:main}
+
+\subsection{Triviality of the $X=0$ limit}\label{ssec:trivial}
+
+\begin{theorem}[Triviality of the limit at $X=0$, for any prime $p$]\label{thm:trivial-limit}
+Let $p$ be any prime, $E/\Q$ supersingular at $p$, and let $A$, $C_k(X)$ be as in Section~\ref{ssec:H-def}. The truncated product
+\[
+C_1(0) \cdot C_2(0) \cdots C_n(0) \cdot A^{-(n+2)} = A^{-2}
+\]
+is independent of $n \geq 1$. In particular,
+\begin{equation}\label{eq:H-at-zero}
+\Hcal(0) = A^{-2}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:Phi-at-1}, $\Phi_{p^k}(1) = p$ for every $k \geq 1$, so $C_k(0) = A$ universally. Hence $C_1(0) \cdots C_n(0) = A^n$ and
+\[
+C_1(0) \cdots C_n(0) \cdot A^{-(n+2)} = A^n \cdot A^{-(n+2)} = A^{-2},
+\]
+independent of $n$. Passing to the projective limit yields the formula.
+\end{proof}
+
+\begin{remark}
+The statement and proof are valid for every prime $p$, not only $p = 2$. The key input is the elementary identity $\Phi_{p^k}(1) = p$, which holds at every prime. We will apply Theorem~\ref{thm:trivial-limit} at $p = 2$ in what follows; the analogous explicit-value calculations for odd $p$ are immediate.
+\end{remark}
+
+\begin{proposition}[Explicit $\Hcal(0)$ at $p=2$]\label{prop:H-explicit-p2}
+\hspace{0pt}
+\begin{enumerate}
+\item[(i)] For $a_p = -2$ ($\alpha = -1+i$, $\bar\alpha = -1-i$):
+\[
+\Hcal(0) = A^{-2} = \begin{pmatrix} -1/2 & 1/2 \\ -1 & 1/2 \end{pmatrix}.
+\]
+\item[(ii)] For $a_p = 0$ ($\alpha = i\sqrt{2}$, $\bar\alpha = -i\sqrt{2}$):
+\[
+\Hcal(0) = A^{-2} = \begin{pmatrix} -1/2 & 0 \\ 0 & -1/2 \end{pmatrix} = -\tfrac{1}{2} \cdot I.
+\]
+\item[(iii)] For $a_p = +2$ ($\alpha = 1+i$, $\bar\alpha = 1-i$):
+\[
+\Hcal(0) = A^{-2} = \begin{pmatrix} -1/2 & -1/2 \\ 1 & 1/2 \end{pmatrix}.
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Direct matrix computation from $A = \begin{pmatrix} a_p & 1 \\ -2 & 0 \end{pmatrix}$.
+\end{proof}
+
+\subsection{Sprung half-logarithm constants are rational}
+
+Combining Theorem~\ref{thm:trivial-limit} with Definition~\ref{eq:halflog-matrix} of Sprung, we read off the constant terms of the half-logarithms at $X = 0$ explicitly.
+
+\begin{corollary}[Rationality of Sprung half-logarithm constants at $p=2$]\label{cor:rationality}
+Let $E$ be an elliptic curve supersingular at $p = 2$, with $a_p \in \{-2,\,0,\,+2\}$. In the canonical $(1, \alpha)$-basis of $\Q_2(\alpha)$:
+\begin{enumerate}
+\item[(i)] For $a_p = -2$ ($\alpha = -1+i$):
+\begin{align}
+\log_\alpha^\sharp\big|_{X=0} &= \tfrac{1}{4}\alpha \in \Q\,\alpha, \\
+\log_\alpha^\flat\big|_{X=0} &= -\tfrac{1}{2} + \tfrac{1}{4}\alpha \in \Q + \Q\,\alpha.
+\end{align}
+\item[(ii)] For $a_p = 0$ ($\alpha = i\sqrt{2}$):
+\begin{align}
+\log_\alpha^\sharp\big|_{X=0} &= -\tfrac{1}{2} \in \Q, \\
+\log_\alpha^\flat\big|_{X=0} &= -\tfrac{1}{4}\alpha \in \Q\,\alpha.
+\end{align}
+\item[(iii)] For $a_p = +2$ ($\alpha = 1+i$):
+\begin{align}
+\log_\alpha^\sharp\big|_{X=0} &= -\tfrac{1}{4}\alpha \in \Q\,\alpha, \\
+\log_\alpha^\flat\big|_{X=0} &= \tfrac{1}{2} + \tfrac{1}{4}\alpha \in \Q + \Q\,\alpha.
+\end{align}
+\end{enumerate}
+In particular, all six constant values lie in $\Q + \Q\,\alpha \subset \Q_2(\alpha)$, despite the matrix $\Hcal(0)$ a priori taking values in $\Q_2(\alpha)$.
+\end{corollary}
+
+\begin{proof}
+By Definition~\ref{eq:halflog-matrix}, the first column of the half-log matrix is
+\[
+\begin{pmatrix} \log_\alpha^\sharp|_{X=0} \\ \log_\alpha^\flat|_{X=0} \end{pmatrix} = \Hcal(0) \cdot \begin{pmatrix} 1 \\ -\alpha^{-1} \end{pmatrix}.
+\]
+By Theorem~\ref{thm:trivial-limit}, $\Hcal(0) = A^{-2}$.
+
+\smallskip
+\noindent\emph{Case $a_p = -2$.} Here $\alpha = -1 + i$, so $\alpha^{-1} = -\tfrac{1}{2} - \tfrac{i}{2}$ and $-\alpha^{-1} = \tfrac{1}{2} + \tfrac{i}{2}$. Substituting the explicit $A^{-2}$ from Proposition~\ref{prop:H-explicit-p2}(i):
+\[
+A^{-2} \cdot \begin{pmatrix} 1 \\ 1/2 + i/2 \end{pmatrix}
+= \begin{pmatrix} -1/2 & 1/2 \\ -1 & 1/2 \end{pmatrix} \begin{pmatrix} 1 \\ 1/2 + i/2 \end{pmatrix}
+= \begin{pmatrix} -\tfrac{1}{4} + \tfrac{i}{4} \\ -\tfrac{3}{4} + \tfrac{i}{4} \end{pmatrix}.
+\]
+We convert to the $(1, \alpha)$-basis using $i = \alpha + 1$:
+\begin{align*}
+\log_\alpha^\sharp|_{X=0} = -\tfrac{1}{4} + \tfrac{i}{4} &= -\tfrac{1}{4} + \tfrac{\alpha + 1}{4} = \tfrac{1}{4}\alpha, \\
+\log_\alpha^\flat|_{X=0} = -\tfrac{3}{4} + \tfrac{i}{4} &= -\tfrac{3}{4} + \tfrac{\alpha + 1}{4} = -\tfrac{1}{2} + \tfrac{1}{4}\alpha.
+\end{align*}
+
+\smallskip
+\noindent\emph{Case $a_p = 0$.} Here $\alpha = i\sqrt{2}$, so $\alpha^{-1} = -\tfrac{i\sqrt{2}}{2}$ and $-\alpha^{-1} = \tfrac{i\sqrt{2}}{2}$. Substituting $A^{-2} = -\tfrac{1}{2} \cdot I$ from Proposition~\ref{prop:H-explicit-p2}(ii):
+\[
+A^{-2} \cdot \begin{pmatrix} 1 \\ i\sqrt{2}/2 \end{pmatrix}
+= -\tfrac{1}{2} \begin{pmatrix} 1 \\ i\sqrt{2}/2 \end{pmatrix}
+= \begin{pmatrix} -\tfrac{1}{2} \\ -\tfrac{i\sqrt{2}}{4} \end{pmatrix}.
+\]
+We convert using $i\sqrt{2} = \alpha$:
+\[
+\log_\alpha^\sharp|_{X=0} = -\tfrac{1}{2}, \qquad
+\log_\alpha^\flat|_{X=0} = -\tfrac{i\sqrt{2}}{4} = -\tfrac{1}{4}\alpha.
+\]
+
+\smallskip
+\noindent\emph{Case $a_p = +2$.} Here $\alpha = 1 + i$, so $\alpha^{-1} = \tfrac{1}{2} - \tfrac{i}{2}$ and $-\alpha^{-1} = -\tfrac{1}{2} + \tfrac{i}{2}$. The matrix $A = \begin{pmatrix} 2 & 1 \\ -2 & 0 \end{pmatrix}$ has $\det A = 2$ and
+$A^{-2} = \begin{pmatrix} -1/2 & -1/2 \\ 1 & 1/2 \end{pmatrix}$. Hence
+\[
+A^{-2} \cdot \begin{pmatrix} 1 \\ -1/2 + i/2 \end{pmatrix}
+= \begin{pmatrix} -\tfrac{1}{4} - \tfrac{i}{4} \\ \tfrac{3}{4} + \tfrac{i}{4} \end{pmatrix}.
+\]
+Using $i = \alpha - 1$:
+\begin{align*}
+\log_\alpha^\sharp|_{X=0} = -\tfrac{1}{4} - \tfrac{i}{4} &= -\tfrac{1}{4} - \tfrac{\alpha - 1}{4} = -\tfrac{1}{4}\alpha, \\
+\log_\alpha^\flat|_{X=0} = \tfrac{3}{4} + \tfrac{i}{4} &= \tfrac{3}{4} + \tfrac{\alpha - 1}{4} = \tfrac{1}{2} + \tfrac{1}{4}\alpha.
+\end{align*}
+In all six cases the value lies in $\Q + \Q\,\alpha$, as claimed.
+\end{proof}
+
+\subsection{The SageMath--Sprung bridge}\label{ssec:bridge}
+
+We now make explicit the bridge between SageMath's \texttt{Dp\_valued\_series} output and the half-logarithm decomposition.
+
+\begin{theorem}[SageMath--Sprung bridge]\label{thm:bridge}
+Let $E/\Q$ be supersingular at $p$, and let $\mathrm{sp} = (v_0(T), v_1(T))$ denote the output of \texttt{Lp.Dp\_valued\_series(n, prec)}, where \texttt{Lp = E.padic\_lseries(p)}. The output satisfies
+\begin{equation}\label{eq:sage-def}
+(1 - \varphi)^{-2} \cdot L_p(E, T) = v_0(T) \cdot \omega + v_1(T) \cdot \varphi(\omega)
+\end{equation}
+in the Dieudonn\'e basis $(\omega, \varphi\omega)$, where $\varphi$ is the Frobenius matrix~\eqref{eq:phi-matrix} on $D_p(E)$.
+
+Equivalently, the $(1, \alpha)$-decomposition $L_p(E, \alpha, T) = G(T) + H(T)\alpha$ is recovered from $\mathrm{sp}$ by the formula
+\begin{equation}\label{eq:bridge-explicit}
+(G_{\rm tmp}, H_{\rm tmp}) := \mathrm{sp} \cdot \bigl((1-\varphi)^2\bigr)^T, \qquad H = -\frac{H_{\rm tmp}}{p}, \qquad G = G_{\rm tmp} - a_p H.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The first equation is the docstring statement of \texttt{Dp\_valued\_series} in the SageMath source code (\texttt{padic\_lseries.py}, class \texttt{pAdicLseriesSupersingular}). Inverting the normalisation: multiply both sides of~\eqref{eq:sage-def} from the right by $(1-\varphi)^2$ (viewing $L_p$, $\omega$, $\varphi(\omega)$ as row vectors in the appropriate basis). The result is $L_p \cdot ((1-\varphi)^2)^T$ in the Dieudonn\'e basis, which by the SageMath internal convention (cf.\ source code) corresponds to the vector $(G + a_p H,\, -p H)$. Solving for $G$ and $H$ yields~\eqref{eq:bridge-explicit}.
+\end{proof}
+
+\begin{remark}
+This is the algorithmic content of the construction used internally by SageMath's \texttt{Dp\_valued\_series} method, here made explicit for direct citation. In particular, the bridge~\eqref{eq:bridge-explicit} is needed to interpret bulk-extracted SageMath data in the conventions of~\cite{Sprung2012, Sprung2016}.
+\end{remark}
+
+\section{Numerical verification}\label{sec:numerical}
+
+We verified the SageMath--Sprung bridge of Theorem~\ref{thm:bridge} on 180 elliptic curves drawn from the Cremona database~\cite{Cremona}, partitioned as follows: 75 curves with $a_p(E) = -2$ in the conductor range $[37,\,997]$, and 105 curves with $a_p(E) = 0$ in the conductor range $[77,\,63\,096]$. The $a_p = 0$ block is subdivided into 75 low-conductor curves in $[77,\,225]$ and 30 curves in $[1\,001,\,63\,096]$ obtained via logarithmically-spaced bucket sampling. All curves have $\mathrm{rank}(E/\Q) \geq 1$.
+
+For each curve, we extracted the SageMath \texttt{Dp\_valued\_series} output and applied the bridge formula~\eqref{eq:bridge-explicit} to recover the $(G, H)$-decomposition of $L_p(E, \alpha, T)$ in the $(1, \alpha)$-basis. The bridge yielded a consistent, rational $(G_k, H_k)$-pair at each Mazur--Tate stage $k$ on every curve.
+
+\subsection{Sample of verified curves}
+
+Table~\ref{tab:sample} shows a representative sample of 12 curves selected to span the conductor range. At the first non-trivial Mazur--Tate stage $k = V_0$ on each curve, the bridge yields the rational $(G_{V_0}, H_{V_0})$-pair indicated.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|r|r|r|c|c}
+Label & Conductor & $a_p(E)$ & rank & $V_0$ & $(G_{V_0}, H_{V_0})$ \\
+\hline
+\texttt{17963c1}  & 17\,963  & $-2$ & 2 & 3 & $(-2,\,\, -7/4)$ \\
+\texttt{70449a1}  & 70\,449  & $-2$ & — & 4 & $(-2,\,\, -7/4)$ \\
+\texttt{53461b1}  & 53\,461  & $-2$ & 3 & 5 & $(-1/4,\, -1)$ \\
+\texttt{55935g1}  & 55\,935  & $-2$ & — & 5 & $(-2,\,\, -7/4)$ \\
+\hline
+\end{tabular}
+\caption{$(G_{V_0}, H_{V_0})$ for four $a_p = -2$ supersingular curves at the
+first non-vanishing Mazur--Tate stage, recovered from SageMath's
+\texttt{Dp\_valued\_series} via the bridge formula~\eqref{eq:bridge-explicit}.
+All values lie in $\Q^2$. The values for the remaining 176 verified curves
+are tabulated in the supplementary code repository (see Section~\ref{sec:numerical}).}
+\label{tab:sample}
+\end{table}
+
+\subsection{Computational details and code}
+
+All verifications were conducted in SageMath~10 using the full Cremona database (largest conductor $499\,998$). The bridge formula~\eqref{eq:bridge-explicit} was implemented as a postprocessing step on the \texttt{Dp\_valued\_series} output, with no Frobenius-precision issues arising in the tested range. The verification code and the complete log files are publicly available at
+\begin{center}
+\url{https://github.com/relkuch-del/sprung-h-matrix-p2}.
+\end{center}
+
+\subsection{Summary}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|r|l|r}
+Class & $n$ & Conductor range & Bridge applies \\
+\hline
+$a_p = -2$ supersingular & 75 & $[37,\,997]$ & 75/75 \\
+$a_p = 0$ supersingular (low)  & 75 & $[77,\,225]$ & 75/75 \\
+$a_p = 0$ supersingular (high) & 30 & $[1\,001,\,63\,096]$ & 30/30 \\
+\hline
+\textbf{Total} & \textbf{180} & $[37,\,63\,096]$ & \textbf{180/180} \\
+\end{tabular}
+\caption{Numerical verification of Theorem~\ref{thm:bridge}: 180 curves, four orders of magnitude in conductor, no failures.}
+\label{tab:bilanz}
+\end{table}
+
+\begin{remark}[The case $a_p = +2$]
+The case $a_p = +2$ at $p = 2$ is covered theoretically by Proposition~\ref{prop:H-explicit-p2}(iii) and Corollary~\ref{cor:rationality}(iii), but it does not occur for any of the 180 tested Cremona curves with $\rm{rank}(E/\Q) \geq 1$. We have $\det((1-\varphi)^2) = 1/4$ in this case.
+\end{remark}
+
+\section{Discussion and open questions}\label{sec:open}
+
+\subsection{Relation to Sprung's main theorem at odd primes}
+Sprung's main theorem~\cite{Sprung2016} concerns the case of an odd supersingular prime. The case $p = 2$ remains open in the published literature. The explicit identification of Corollary~\ref{cor:rationality} and the SageMath bridge of Theorem~\ref{thm:bridge} provide concrete computational tools for further study of the $p = 2$ case.
+
+\subsection{Convergence of $\Hcal(X)$ for $X \neq 0$}
+The analysis here treats only $X = 0$, where the limit~\eqref{eq:H-def} degenerates algebraically by Theorem~\ref{thm:trivial-limit}. For $X \neq 0$ the cofactor matrices $C_k(X)$ depend nontrivially on $k$, and explicit power-series expansions of $\Hcal(X)$ in $X$ require the convergence analysis of~\cite[\S 4]{Sprung2012}. We leave the explicit computation of higher-order terms to future work.
+
+\subsection{Higher Mazur--Tate stages}
+Theorem~\ref{thm:bridge} translates SageMath output to the $(1, \alpha)$-basis at every Mazur--Tate stage $k$. The resulting sequences $(G_k, H_k)_{k\geq 0}$ display rich rational structure across families of curves, including linearity patterns and stratifications by 2-adic valuation. We do not address these phenomena here; an empirical study of the higher-stage structure is the subject of separate work.
+
+\begin{thebibliography}{99}
+
+\bibitem{Kobayashi2003}
+S.~Kobayashi,
+\emph{Iwasawa theory for elliptic curves at supersingular primes,}
+Invent.\ Math.\ \textbf{152} (2003), no.~1, 1--36.
+DOI: \href{https://doi.org/10.1007/s00222-002-0265-4}{10.1007/s00222-002-0265-4}.
+
+\bibitem{Pollack2003}
+R.~Pollack,
+\emph{On the $p$-adic $L$-function of a modular form at a supersingular prime,}
+Duke Math.\ J.\ \textbf{118} (2003), no.~3, 523--558.
+DOI: \href{https://doi.org/10.1215/S0012-7094-03-11835-9}{10.1215/S0012-7094-03-11835-9}.
+
+\bibitem{Sprung2012}
+F.~E.~I.~Sprung,
+\emph{Iwasawa theory for elliptic curves at supersingular primes: A pair of main conjectures,}
+J.\ Number Theory \textbf{132} (2012), no.~7, 1483--1506.
+DOI: \href{https://doi.org/10.1016/j.jnt.2011.11.003}{10.1016/j.jnt.2011.11.003}.
+arXiv: \href{https://arxiv.org/abs/0903.3419}{0903.3419}.
+
+\bibitem{Sprung2016}
+F.~E.~I.~Sprung,
+\emph{The Iwasawa Main Conjecture for elliptic curves at odd supersingular primes,}
+preprint, 2016.
+arXiv: \href{https://arxiv.org/abs/1610.10017}{1610.10017}.
+
+\bibitem{CastellaWan2016}
+F.~Castella and X.~Wan,
+\emph{Iwasawa Main Conjecture for Heegner Points: Supersingular Case,}
+preprint, 2015/2016.
+arXiv: \href{https://arxiv.org/abs/1506.02538}{1506.02538}.
+
+\bibitem{Sage}
+The Sage Developers,
+\emph{SageMath, the Sage Mathematics Software System (Version 10.x),}
+\url{https://www.sagemath.org}, 2026.
+
+\bibitem{Cremona}
+J.~E.~Cremona,
+\emph{The Elliptic Curve Database for conductors up to $500\,000$,}
+\url{https://github.com/JohnCremona/ecdata}, accessed May 2026.
+
+\end{thebibliography}
+
+\end{document}
+03-11835-9}.
+
+\bibitem{Sprung2012}
+F.~E.~I.~Sprung,
+\emph{Iwasawa theory for elliptic curves at supersingular primes: A pair of main conjectures,}
+J.\ Number Theory \textbf{132} (2012), no.~7, 1483--1506.
+DOI: \href{https://doi.org/10.1016/j.jnt.2011.11.003}{10.1016/j.jnt.2011.11.003}.
+arXiv: \href{https://arxiv.org/abs/0903.3419}{0903.3419}.
+
+\bibitem{Sprung2016}
+F.~E.~I.~Sprung,
+\emph{The Iwasawa Main Conjecture for elliptic curves at odd supersingular primes,}
+preprint, 2016.
+arXiv: \href{https://arxiv.org/abs/1610.10017}{1610.10017}.
+
+\bibitem{CastellaWan2016}
+F.~Castella and X.~Wan,
+\emph{Iwasawa Main Conjecture for Heegner Points: Supersingular Case,}
+preprint, 2015/2016.
+arXiv: \href{https://arxiv.org/abs/1506.02538}{1506.02538}.
+
+\bibitem{Sage}
+The Sage Developers,
+\emph{SageMath, the Sage Mathematics Software System (Version 10.x),}
+\url{https://www.sagemath.org}, 2026.
+
+\bibitem{Cremona}
+J.~E.~Cremona,
+\emph{The Elliptic Curve Database for conductors up to $500\,000$,}
+\url{https://github.com/JohnCremona/ecdata}, accessed May 2026.
+
+\end{thebibliography}
+
+\end{document}

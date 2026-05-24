@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or data, please cite the accompanying paper."
-title: "Explicit evaluation of Sprung's half-logarithm H-matrix at X=0 for p=2 supersingular reduction"
+title: "Explicit half-logarithm constants and the SageMath-Sprung bridge for p=2 supersingular reduction"
 authors:
   - family-names: Elkuch
     given-names: Raphael
