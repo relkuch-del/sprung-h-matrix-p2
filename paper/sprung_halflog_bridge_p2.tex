@@ -391,6 +391,9 @@ The analysis here treats only $X = 0$, where the limit~\eqref{eq:H-def} degenera
 \subsection{Higher Mazur--Tate stages}
 Theorem~\ref{thm:bridge} translates SageMath output to the $(1, \alpha)$-basis at every Mazur--Tate stage $k$. The resulting sequences $(G_k, H_k)_{k\geq 0}$ display rich rational structure across families of curves, including linearity patterns and stratifications by 2-adic valuation. We do not address these phenomena here; an empirical study of the higher-stage structure is the subject of separate work.
 
+\subsection{Relation to Sprung's distribution-matrix reformulation}\label{subsec:sprung2022}
+After the present work was completed, the author became aware of Sprung's recent reformulation~\cite{Sprung2022} of the logarithm matrix in terms of distributions on $\Z_p$, characterised combinatorially by $p$-adic digits and extending the Dion--Lei framework~\cite{DionLei2017} from $a_p = 0$ to general $a_p$. The two perspectives are complementary: \cite{Sprung2022} treats $\mathrm{Log}_{a_p}(1+T)$ as a distribution-valued object across all of $\Z_p$, whereas the present work focuses on the explicit closed-form evaluation $\Hcal(0) = A^{-2}$ at $T = 0$ and its computational interface with SageMath at $p = 2$. The normalisation conventions differ: \cite{Sprung2022} uses an auxiliary root matrix $R_n$ with a different power-of-$p$ scaling for $p = 2$ (see~\cite[footnote~1]{Sprung2022}); at $X = 0$ the two normalisations are related by a unimodular transformation depending on $a_p$, leaving characteristic ideals invariant. A direct comparison of the explicit values of Corollary~\ref{cor:rationality} in the digit-distribution language of~\cite{Sprung2022} would be of interest.
+
 \begin{thebibliography}{99}
 
 \bibitem{Kobayashi2003}
@@ -430,6 +433,18 @@ A.~Lei,
 Canad.\ Math.\ Bull.\ \textbf{57} (2014), no.~4, 845--852.
 arXiv: \href{https://arxiv.org/abs/1304.7473}{1304.7473}.
 
+\bibitem{DionLei2017}
+C.~Dion and A.~Lei,
+\emph{Plus and minus logarithms and Amice transform,}
+C.~R.\ Math.\ Acad.\ Sci.\ Paris \textbf{355} (2017), no.~9, 942--948.
+
+\bibitem{Sprung2022}
+F.~E.~I.~Sprung,
+\emph{La matrice de logarithme en termes de chiffres $p$-adiques (The logarithm matrix in terms of $p$-adic digits),}
+Ann.\ Math.\ Qu\'ebec, published online 2023.
+DOI: \href{https://doi.org/10.1007/s40316-023-00215-2}{10.1007/s40316-023-00215-2}.
+arXiv: \href{https://arxiv.org/abs/2211.08334}{2211.08334}.
+
 \bibitem{Sage}
 The Sage Developers,
 \emph{SageMath, the Sage Mathematics Software System (Version 10.x),}
@@ -443,9 +458,51 @@ J.~E.~Cremona,
 \end{thebibliography}
 
 \end{document}
-dge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} applied to SageMath's \texttt{Dp\_valued\_series} output yields a rational $(G_k, H_k)$ at every Mazur--Tate stage $k$, and the corresponding identity in the cyclic basis holds bit-exactly. Verified on 180 curves spanning four orders of magnitude in conductor; zero discrepancies.}
-\label{tab:bilanz}
-\end{table}
+: A pair of main conjectures,}
+J.\ Number Theory \textbf{132} (2012), no.~7, 1483--1506.
+DOI: \href{https://doi.org/10.1016/j.jnt.2011.11.003}{10.1016/j.jnt.2011.11.003}.
+arXiv: \href{https://arxiv.org/abs/0903.3419}{0903.3419}.
 
-\begin{remark}[The case $a_p = +2$]
-The case $a_p = +2$ at
+\bibitem{Sprung2016}
+F.~E.~I.~Sprung,
+\emph{The Iwasawa Main Conjecture for elliptic curves at odd supersingular primes,}
+preprint, 2016.
+arXiv: \href{https://arxiv.org/abs/1610.10017}{1610.10017}.
+
+\bibitem{CastellaWan2016}
+F.~Castella and X.~Wan,
+\emph{Iwasawa Main Conjecture for Heegner Points: Supersingular Case,}
+preprint, 2015/2016.
+arXiv: \href{https://arxiv.org/abs/1506.02538}{1506.02538}.
+
+\bibitem{Lei2013}
+A.~Lei,
+\emph{Factorisation of two-variable $p$-adic $L$-functions,}
+Canad.\ Math.\ Bull.\ \textbf{57} (2014), no.~4, 845--852.
+arXiv: \href{https://arxiv.org/abs/1304.7473}{1304.7473}.
+
+\bibitem{DionLei2017}
+C.~Dion and A.~Lei,
+\emph{Plus and minus logarithms and Amice transform,}
+C.~R.\ Math.\ Acad.\ Sci.\ Paris \textbf{355} (2017), no.~9, 942--948.
+
+\bibitem{Sprung2022}
+F.~E.~I.~Sprung,
+\emph{La matrice de logarithme en termes de chiffres $p$-adiques (The logarithm matrix in terms of $p$-adic digits),}
+Ann.\ Math.\ Qu\'ebec, published online 2023.
+DOI: \href{https://doi.org/10.1007/s40316-023-00215-2}{10.1007/s40316-023-00215-2}.
+arXiv: \href{https://arxiv.org/abs/2211.08334}{2211.08334}.
+
+\bibitem{Sage}
+The Sage Developers,
+\emph{SageMath, the Sage Mathematics Software System (Version 10.x),}
+\url{https://www.sagemath.org}, 2026.
+
+\bibitem{Cremona}
+J.~E.~Cremona,
+\emph{The Elliptic Curve Database for conductors up to $500\,000$,}
+\url{https://github.com/JohnCremona/ecdata}, accessed May 2026.
+
+\end{thebibliography}
+
+\end{document}
