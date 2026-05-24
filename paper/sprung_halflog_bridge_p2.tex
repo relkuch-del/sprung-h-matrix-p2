@@ -54,7 +54,7 @@
 \begin{document}
 
 \begin{abstract}
-We make two observations on Sprung's half-logarithm matrix $\Hcal(X)$ for elliptic curves with supersingular reduction. First, for any prime $p$, the projective-limit construction of $\Hcal(X)$ at $X=0$ degenerates to the closed form $A^{-2}B$, since the cyclotomic-polynomial values $\Phi_{p^k}(1)$ collapse to $p$. Second, by reading the SageMath source code for \texttt{padic\_lseries.Dp\_valued\_series}, we recover the explicit identification between Sage's output and the constants of $L_p(E, \alpha, T)$ in the $(1, \alpha)$-basis: Sage returns $(1-\varphi)^{-2}\cdot L_p$ in the Dieudonn\'e $(\omega, \varphi\omega)$-basis, with $\varphi$ the half-frobenius matrix at the supersingular prime. Combining the two observations, we deduce that the constant terms of Sprung's half-logarithms at $X=0$ are rational over $\Q$ in the canonical $(1, \alpha)$-basis, and we list the explicit values for $p=2$ supersingular curves. We verify the SageMath--Sprung bridge bit-exactly on 180 elliptic curves drawn from the Cremona database with conductors in $[37,\,63\,096]$.
+We make two observations on Sprung's half-logarithm matrix $\Hcal(X)$ for elliptic curves with supersingular reduction. First, for any prime $p$, the projective-limit construction of $\Hcal(X)$ at $X=0$ degenerates to the closed form $A^{-2}$, since the cyclotomic-polynomial values $\Phi_{p^k}(1)$ collapse to $p$. Second, by reading the SageMath source code for \texttt{padic\_lseries.Dp\_valued\_series}, we recover the explicit identification between Sage's output and the constants of $L_p(E, \alpha, T)$ in the $(1, \alpha)$-basis: Sage returns $(1-\varphi)^{-2}\cdot L_p$ in the Dieudonn\'e $(\omega, \varphi\omega)$-basis, with $\varphi$ the half-frobenius matrix at the supersingular prime. Combining the two observations, we deduce that the constant terms of Sprung's half-logarithms at $X=0$ are rational over $\Q$ in the canonical $(1, \alpha)$-basis, and we list the explicit values for $p=2$ supersingular curves. We verify the SageMath--Sprung bridge bit-exactly on 180 elliptic curves drawn from the Cremona database with conductors in $[37,\,63\,096]$.
 \end{abstract}
 
 \maketitle
@@ -448,4 +448,4 @@ dge}: for each curve, the inverse bridge formula~\eqref{eq:bridge-explicit} appl
 \end{table}
 
 \begin{remark}[The case $a_p = +2$]
-The case $a_p = +2$ a
+The case $a_p = +2$ at
