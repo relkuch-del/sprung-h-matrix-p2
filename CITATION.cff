@@ -1,0 +1,62 @@
+cff-version: 1.2.0
+message: "If you use this software or data, please cite the accompanying paper."
+title: "Explicit evaluation of Sprung's half-logarithm H-matrix at X=0 for p=2 supersingular reduction"
+authors:
+  - family-names: Elkuch
+    given-names: Raphael
+    email: r.elkuch@elkuch.group
+type: software
+license: MIT
+version: "1.0.0"
+date-released: "2026-05-25"
+abstract: >-
+  Verification code and data for the paper "Explicit evaluation of Sprung's
+  half-logarithm H-matrix at X=0 for p=2 supersingular reduction". The code
+  uses SageMath 10 to verify, bit-exactly, an explicit conversion bridge
+  between SageMath's Dieudonné basis and Sprung's canonical basis on 180
+  elliptic curves drawn from the Cremona database with conductors in
+  [37, 63096].
+keywords:
+  - elliptic curves
+  - p-adic L-functions
+  - Iwasawa theory
+  - supersingular reduction
+  - Sprung half-logarithms
+  - SageMath
+  - Cremona database
+references:
+  - type: article
+    authors:
+      - family-names: Sprung
+        given-names: Florian
+    title: "Iwasawa theory for elliptic curves at supersingular primes: A pair of main conjectures"
+    journal: "Journal of Number Theory"
+    volume: 132
+    issue: 7
+    year: 2012
+    start: 1483
+    end: 1506
+    doi: "10.1016/j.jnt.2011.11.003"
+  - type: article
+    authors:
+      - family-names: Kobayashi
+        given-names: Shinichi
+    title: "Iwasawa theory for elliptic curves at supersingular primes"
+    journal: "Inventiones mathematicae"
+    volume: 152
+    year: 2003
+    start: 1
+    end: 36
+    doi: "10.1007/s00222-002-0265-4"
+  - type: article
+    authors:
+      - family-names: Pollack
+        given-names: Robert
+    title: "On the p-adic L-function of a modular form at a supersingular prime"
+    journal: "Duke Mathematical Journal"
+    volume: 118
+    issue: 3
+    year: 2003
+    start: 523
+    end: 558
+    doi: "10.1215/S0012-7094-03-11835-9"
