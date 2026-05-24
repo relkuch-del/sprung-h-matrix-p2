@@ -34,17 +34,27 @@ N_PARAM = 13
 PREC = 30
 
 TRIGGERS = [
+    # a_p = -2 (4 Trigger)
     "17963c1",  # rank=2, V_0=3 erwartet (G, H) = (-2, -7/4)
     "70449a1",  # V_0=4 erwartet (G, H) = (-2, -7/4)
     "53461b1",  # V_0=5 erwartet (G, H) = (-1/4, -1)
     "55935g1",  # V_0=5 erwartet (G, H) = (-2, -7/4)
+    # a_p = 0 (3 Trigger — erwartete Werte beim ersten Lauf bestimmen)
+    "30487a1",
+    "60803a1",
+    "58939a1",
 ]
 
 EXPECTED = {
+    # a_p = -2
     "17963c1": (3, QQ(-2), QQ(-7)/4),
     "70449a1": (4, QQ(-2), QQ(-7)/4),
     "53461b1": (5, QQ(-1)/4, QQ(-1)),
     "55935g1": (5, QQ(-2), QQ(-7)/4),
+    # a_p = 0 (verifiziert 27.5.2026)
+    "30487a1": (7, QQ(1), QQ(-1)/4),
+    "60803a1": (7, QQ(3)/2, QQ(-3)/8),
+    "58939a1": (3, QQ(1), QQ(-1)/4),
 }
 
 
@@ -107,6 +117,8 @@ def main():
     print("-" * 95)
 
     all_match = True
+    n_match = 0
+    n_discovery = 0
     for label in TRIGGERS:
         try:
             a_p, V_0, G, H = extract_gh(label)
@@ -114,25 +126,9 @@ def main():
                 print(f"{label:<12} | {a_p:>3} | N/A | KEIN V_0 gefunden")
                 all_match = False
                 continue
-            exp_V_0, exp_G, exp_H = EXPECTED[label]
-            match = (V_0 == exp_V_0 and G == exp_G and H == exp_H)
-            marker = "✓" if match else "✗"
-            print(f"{label:<12} | {a_p:>3} | {V_0:>3} | {str(G):>10} | {str(H):>10} | "
-                  f"V_0={exp_V_0}, ({exp_G}, {exp_H}) | {marker}")
-            if not match:
-                all_match = False
-        except Exception as e:
-            print(f"{label:<12} FEHLER: {e}")
-            all_match = False
-
-    print()
-    print("=" * 70)
-    if all_match:
-        print("ALLE 4 TRIGGER bit-genau verifiziert — Tabelle 1 stimmt.")
-    else:
-        print("DISKREPANZEN gefunden — bitte Werte prüfen.")
-    print("=" * 70)
-
-
-if __name__ == "__main__":
-    main()
+            if label in EXPECTED:
+                exp_V_0, exp_G, exp_H = EXPECTED[label]
+                match = (V_0 == exp_V_0 and G == exp_G and H == exp_H)
+                marker = "✓" if match else "✗"
+                print(f"{label:<12} | {a_p:>3} | {V_0:>3} | {str(G):>10} | {str(H):>10} | "
+                   

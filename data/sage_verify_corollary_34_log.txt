@@ -1,0 +1,45 @@
+======================================================================
+Direkter algebraischer Beweis von Korollar 3.4
+(unabhängig von SageMath's Dp_valued_series)
+======================================================================
+
+--- Fall a_p = -2 ---
+  a_p = -2, K = Q(α) mit α² - (-2)·α + 2 = 0
+  H(0) = A^-2 = [-1/2, 1/2, -1, 1/2]
+  Halblog-Matrix erste Spalte:
+    log_α^♯|_0 = 1/4*alpha
+               = (0) + (1/4)·α
+               Erwartet: (0, 1/4)  ✓
+    log_α^♭|_0 = 1/4*alpha - 1/2
+               = (-1/2) + (1/4)·α
+               Erwartet: (-1/2, 1/4)  ✓
+
+
+--- Fall a_p = +0 ---
+  a_p = +0, K = Q(α) mit α² - (0)·α + 2 = 0
+  H(0) = A^-2 = [-1/2, 0, 0, -1/2]
+  Halblog-Matrix erste Spalte:
+    log_α^♯|_0 = -1/2
+               = (-1/2) + (0)·α
+               Erwartet: (-1/2, 0)  ✓
+    log_α^♭|_0 = -1/4*alpha
+               = (0) + (-1/4)·α
+               Erwartet: (0, -1/4)  ✓
+
+
+--- Fall a_p = +2 ---
+  a_p = +2, K = Q(α) mit α² - (2)·α + 2 = 0
+  H(0) = A^-2 = [-1/2, -1/2, 1, 1/2]
+  Halblog-Matrix erste Spalte:
+    log_α^♯|_0 = -1/4*alpha
+               = (0) + (-1/4)·α
+               Erwartet: (0, -1/4)  ✓
+    log_α^♭|_0 = 1/4*alpha + 1/2
+               = (1/2) + (1/4)·α
+               Erwartet: (1/2, 1/4)  ✓
+
+
+======================================================================
+KOROLLAR 3.4 ALGEBRAISCH BIT-GENAU VERIFIZIERT
+(alle 6 Werte stimmen mit Paper-Tabelle in Korollar 3.4 überein)
+======================================================================
